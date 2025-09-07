@@ -10,7 +10,7 @@ const TemplateCard = ({
   gradient = false 
 }) => {
   return (
-    <div className="group relative bg-white rounded-2xl overflow-hidden border border-border hover:border-primary/30 hover:shadow-xl transition-smooth">
+    <div className="group relative bg-white dark:bg-surface-dark rounded-2xl overflow-hidden border border-border dark:border-border hover:border-primary/30 hover:shadow-xl transition-smooth">
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden">
         {gradient ? (
@@ -42,8 +42,8 @@ const TemplateCard = ({
       {/* Content */}
       <div className="p-6">
         <span className="text-sm font-medium text-primary">{category}</span>
-        <h3 className="text-xl font-semibold text-text-primary mt-2 mb-3">{title}</h3>
-        <p className="text-text-secondary line-clamp-2">{description}</p>
+        <h3 className="text-xl font-semibold text-text-primary dark:text-text-dark mt-2 mb-3">{title}</h3>
+        <p className="text-text-secondary dark:text-text-light line-clamp-2">{description}</p>
       </div>
     </div>
   );

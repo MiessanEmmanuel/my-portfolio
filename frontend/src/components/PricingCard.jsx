@@ -13,7 +13,7 @@ const PricingCard = ({
 }) => {
   const cardClass = highlighted 
     ? 'relative bg-gradient-to-br from-primary to-primary-dark text-white transform scale-105 shadow-2xl' 
-    : 'bg-white border border-border';
+    : 'bg-white dark:bg-surface-dark border border-border dark:border-border';
     
   return (
     <div className={`rounded-2xl p-8 transition-smooth hover:shadow-xl ${cardClass}`}>
@@ -27,16 +27,18 @@ const PricingCard = ({
       
       <div className="space-y-6">
         <div>
-          <h3 className={`text-2xl font-bold ${highlighted ? 'text-white' : 'text-text-primary'}`}>
+          <h3 className={`text-2xl font-bold ${highlighted ? 'text-white' : 'text-text-primary dark:text-text-dark'}`}>
             {title}
           </h3>
           <div className="mt-4">
-            <span className={`text-5xl font-bold ${highlighted ? 'text-white' : 'text-text-primary'}`}>
-              ${price}
+            <span className={`text-5xl font-bold ${highlighted ? 'text-white' : 'text-text-primary dark:text-text-dark'}`}>
+              {typeof price === 'string' ? price : `$${price}`}
             </span>
-            <span className={`text-lg ${highlighted ? 'text-white/80' : 'text-text-secondary'}`}>
-              /{period}
-            </span>
+            {typeof price !== 'string' && (
+              <span className={`text-lg ${highlighted ? 'text-white/80' : 'text-text-secondary dark:text-text-light'}`}>
+                /{period}
+              </span>
+            )}
           </div>
         </div>
         
@@ -50,7 +52,7 @@ const PricingCard = ({
                   <X className="w-5 h-5 opacity-40" />
                 )}
               </div>
-              <span className={`${highlighted ? 'text-white' : feature.included ? 'text-text-primary' : 'text-text-light'}`}>
+              <span className={`${highlighted ? 'text-white' : feature.included ? 'text-text-primary dark:text-text-dark' : 'text-text-light dark:text-text-secondary'}`}>
                 {feature.text}
               </span>
             </li>

@@ -1,0 +1,310 @@
+import React, { useState } from 'react';
+import { Link, useParams, Navigate } from 'react-router-dom';
+import NavBar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Button from '../components/Button';
+import { getProjectById, projects } from '../data/projects';
+import {
+  ArrowLeft,
+  ExternalLink,
+  Github,
+  Calendar,
+  User,
+  Clock,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  X
+} from 'lucide-react';
+
+const ProjectDetailPage = () => {
+  const { id } = useParams();
+  const project = getProjectById(id);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
+  if (!project) {
+    return <Navigate to="/projets" replace />;
+  }
+
+  const currentIndex = projects.findIndex(p => p.id === project.id);
+  const nextProject = projects[currentIndex + 1];
+  const prevProject = projects[currentIndex - 1];
+
+  const openGallery = (index) => {
+    setSelectedImage(index);
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const nextImage = () => {
+    setSelectedImage((prev) => (prev + 1) % project.gallery.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImage((prev) => (prev - 1 + project.gallery.length) % project.gallery.length);
+  };
+
+  const GalleryModal = () => (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
+      <div className="relative max-w-6xl max-h-full">
+        <button
+          onClick={closeGallery}
+          className="absolute -top-10 right-0 text-white hover:text-gray-300 z-10"
+        >
+          <X size={32} />
+        </button>
+
+        <img
+          src={project.gallery[selectedImage]}
+          alt={`${project.title} - Image ${selectedImage + 1}`}
+          className="max-w-full max-h-screen object-contain"
+        />
+
+        <button
+          onClick={prevImage}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 bg-black/50 rounded-full p-2"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        <button
+          onClick={nextImage}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 bg-black/50 rounded-full p-2"
+        >
+          <ChevronRight size={24} />
+        </button>
+
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {project.gallery.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(index)}
+              className={`w-3 h-3 rounded-full ${index === selectedImage ? 'bg-white' : 'bg-white/50'
+                }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background dark:bg-background-dark transition-colors duration-300">
+      <NavBar variant={1} />
+
+      {/* Back Navigation */}
+      <section className="pt-24 pb-8 bg-white dark:bg-surface-dark border-b border-border dark:border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/projets"
+            className="inline-flex items-center gap-2 text-text-secondary dark:text-text-light hover:text-primary transition-smooth"
+          >
+            <ArrowLeft size={20} />
+            Retour aux projets
+          </Link>
+        </div>
+      </section>
+
+      {/* Project Header */}
+      <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <span className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-full">
+                  {project.category}
+                </span>
+                <span className={`px-4 py-2 text-sm font-medium rounded-full ${project.status === 'Terminé'
+                  ? 'bg-accent-green text-white'
+                  : project.status === 'En cours'
+                    ? 'bg-accent-yellow text-white'
+                    : 'bg-gray-500 text-white'
+                  }`}>
+                  {project.status}
+                </span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl font-bold text-text-primary dark:text-text-dark mb-6">
+                {project.title}
+              </h1>
+
+              <p className="text-lg text-text-secondary dark:text-text-light mb-8">
+                {project.longDescription}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                <div className="flex items-center gap-3">
+                  <Calendar className="text-primary" size={20} />
+                  <div>
+                    <p className="text-sm text-text-secondary dark:text-text-light">Date</p>
+                    <p className="font-semibold text-text-primary dark:text-text-dark">{project.date}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="text-primary" size={20} />
+                  <div>
+                    <p className="text-sm text-text-secondary dark:text-text-light">Durée</p>
+                    <p className="font-semibold text-text-primary dark:text-text-dark">{project.duration}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <User className="text-primary" size={20} />
+                  <div>
+                    <p className="text-sm text-text-secondary dark:text-text-light">Client</p>
+                    <p className="font-semibold text-text-primary dark:text-text-dark">{project.client}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                {project.liveUrl && (
+                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="gradient" size="lg">
+                      <ExternalLink size={20} className="mr-2" />
+                      Voir le projet
+                    </Button>
+                  </a>
+                )}
+                {project.githubUrl && (
+                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="lg">
+                      <Github size={20} className="mr-2" />
+                      Code source
+                    </Button>
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <div className="relative">
+              <img
+                src={project.image}
+                alt={project.title}
+                className="rounded-2xl shadow-2xl cursor-pointer hover:scale-105 transition-smooth"
+                onClick={() => openGallery(0)}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl pointer-events-none" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section className="py-16 bg-white dark:bg-surface-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-text-primary dark:text-text-dark mb-8 text-center">
+            Galerie du projet
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {project.gallery.map((image, index) => (
+              <div
+                key={index}
+                className="relative group cursor-pointer"
+                onClick={() => openGallery(index)}
+              >
+                <img
+                  src={image}
+                  alt={`${project.title} - Image ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg group-hover:scale-105 transition-smooth"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-smooth rounded-lg flex items-center justify-center">
+                  <ExternalLink className="text-white" size={24} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Technologies & Features */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* Technologies */}
+            <div>
+              <h3 className="text-2xl font-bold text-text-primary dark:text-text-dark mb-8">
+                Technologies utilisées
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {project.technologies.map((tech, index) => (
+                  <div key={index} className="bg-white dark:bg-surface-dark p-4 rounded-lg border border-border dark:border-border text-center hover:border-primary/30 transition-smooth">
+                    <span className="font-medium text-text-primary dark:text-text-dark">{tech}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <h3 className="text-2xl font-bold text-text-primary dark:text-text-dark mb-8">
+                Fonctionnalités principales
+              </h3>
+              <div className="space-y-4">
+                {project.features.map((feature, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <CheckCircle className="text-accent-green mt-1 flex-shrink-0" size={20} />
+                    <span className="text-text-secondary dark:text-text-light">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Navigation vers autres projets */}
+      <section className="py-16 bg-white dark:bg-surface-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-2xl font-bold text-text-primary dark:text-text-dark mb-8 text-center">
+            Autres projets
+          </h3>
+          <div className="grid md:grid-cols-2 gap-8">
+            {prevProject && (
+              <Link to={`/projets/${prevProject.id}`} className="group">
+                <div className="bg-background dark:bg-background-dark rounded-xl p-6 border border-border dark:border-border hover:border-primary/30 transition-smooth">
+                  <div className="flex items-center gap-3 mb-4">
+                    <ArrowLeft className="text-primary" size={20} />
+                    <span className="text-sm text-text-secondary dark:text-text-light">Projet précédent</span>
+                  </div>
+                  <h4 className="text-xl font-semibold text-text-primary dark:text-text-dark group-hover:text-primary transition-smooth">
+                    {prevProject.title}
+                  </h4>
+                  <p className="text-text-secondary dark:text-text-light mt-2">
+                    {prevProject.description}
+                  </p>
+                </div>
+              </Link>
+            )}
+            {nextProject && (
+              <Link to={`/projets/${nextProject.id}`} className="group">
+                <div className="bg-background dark:bg-background-dark rounded-xl p-6 border border-border dark:border-border hover:border-primary/30 transition-smooth">
+                  <div className="flex items-center justify-end gap-3 mb-4">
+                    <span className="text-sm text-text-secondary dark:text-text-light">Projet suivant</span>
+                    <ArrowLeft className="text-primary rotate-180" size={20} />
+                  </div>
+                  <h4 className="text-xl font-semibold text-text-primary dark:text-text-dark group-hover:text-primary transition-smooth text-right">
+                    {nextProject.title}
+                  </h4>
+                  <p className="text-text-secondary dark:text-text-light mt-2 text-right">
+                    {nextProject.description}
+                  </p>
+                </div>
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Modal */}
+      {isGalleryOpen && <GalleryModal />}
+
+      <Footer variant={1} />
+    </div>
+  );
+};
+
+export default ProjectDetailPage;
