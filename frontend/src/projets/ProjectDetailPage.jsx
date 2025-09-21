@@ -3,7 +3,7 @@ import { Link, useParams, Navigate } from 'react-router-dom';
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Button from '../components/Button';
-import { getProjectById, projects } from '../data/projects';
+import { useProject } from '../hooks/useProjects';
 import {
   ArrowLeft,
   ExternalLink,
@@ -14,22 +14,34 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Loader
 } from 'lucide-react';
 
 const ProjectDetailPage = () => {
-  const { id } = useParams();
-  const project = getProjectById(id);
+  const { id } = useParams(); // This is now the slug
+  const { project, loading, error } = useProject(id);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
-  if (!project) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background dark:bg-background-dark transition-colors duration-300">
+        <NavBar variant={1} />
+        <div className="flex justify-center items-center py-32">
+          <Loader className="animate-spin h-8 w-8 text-primary" />
+          <span className="ml-2 text-text-secondary">Chargement du projet...</span>
+        </div>
+        <Footer variant={1} />
+      </div>
+    );
+  }
+
+  if (error || !project) {
     return <Navigate to="/projets" replace />;
   }
 
-  const currentIndex = projects.findIndex(p => p.id === project.id);
-  const nextProject = projects[currentIndex + 1];
-  const prevProject = projects[currentIndex - 1];
+  const gallery = project.gallery || [];
 
   const openGallery = (index) => {
     setSelectedImage(index);
@@ -41,15 +53,15 @@ const ProjectDetailPage = () => {
   };
 
   const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % project.gallery.length);
+    setSelectedImage((prev) => (prev + 1) % gallery.length);
   };
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + project.gallery.length) % project.gallery.length);
+    setSelectedImage((prev) => (prev - 1 + gallery.length) % gallery.length);
   };
 
   const GalleryModal = () => (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
       <div className="relative max-w-6xl max-h-full">
         <button
           onClick={closeGallery}
@@ -59,8 +71,8 @@ const ProjectDetailPage = () => {
         </button>
 
         <img
-          src={project.gallery[selectedImage]}
-          alt={`${project.title} - Image ${selectedImage + 1}`}
+          src={gallery[selectedImage]?.image_url || gallery[selectedImage]}
+          alt={gallery[selectedImage]?.alt_text || `${project.title} - Image ${selectedImage + 1}`}
           className="max-w-full max-h-screen object-contain"
         />
 
@@ -133,7 +145,7 @@ const ProjectDetailPage = () => {
               </h1>
 
               <p className="text-lg text-text-secondary dark:text-text-light mb-8">
-                {project.longDescription}
+                {project.long_description || project.description}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
@@ -141,7 +153,7 @@ const ProjectDetailPage = () => {
                   <Calendar className="text-primary" size={20} />
                   <div>
                     <p className="text-sm text-text-secondary dark:text-text-light">Date</p>
-                    <p className="font-semibold text-text-primary dark:text-text-dark">{project.date}</p>
+                    <p className="font-semibold text-text-primary dark:text-text-dark">{project.date_completed || project.date}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -161,16 +173,16 @@ const ProjectDetailPage = () => {
               </div>
 
               <div className="flex gap-4">
-                {project.liveUrl && (
-                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                {project.live_url && (
+                  <a href={project.live_url} target="_blank" rel="noopener noreferrer">
                     <Button variant="gradient" size="lg">
                       <ExternalLink size={20} className="mr-2" />
                       Voir le projet
                     </Button>
                   </a>
                 )}
-                {project.githubUrl && (
-                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                {project.github_url && (
+                  <a href={project.github_url} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="lg">
                       <Github size={20} className="mr-2" />
                       Code source
@@ -200,15 +212,15 @@ const ProjectDetailPage = () => {
             Galerie du projet
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {project.gallery.map((image, index) => (
+            {gallery.map((image, index) => (
               <div
                 key={index}
                 className="relative group cursor-pointer"
                 onClick={() => openGallery(index)}
               >
                 <img
-                  src={image}
-                  alt={`${project.title} - Image ${index + 1}`}
+                  src={image?.image_url || image}
+                  alt={image?.alt_text || `${project.title} - Image ${index + 1}`}
                   className="w-full h-48 object-cover rounded-lg group-hover:scale-105 transition-smooth"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-smooth rounded-lg flex items-center justify-center">
@@ -230,9 +242,9 @@ const ProjectDetailPage = () => {
                 Technologies utilisées
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {project.technologies.map((tech, index) => (
+                {project.technologies && project.technologies.map((tech, index) => (
                   <div key={index} className="bg-white dark:bg-surface-dark p-4 rounded-lg border border-border dark:border-border text-center hover:border-primary/30 transition-smooth">
-                    <span className="font-medium text-text-primary dark:text-text-dark">{tech}</span>
+                    <span className="font-medium text-text-primary dark:text-text-dark">{tech.name || tech}</span>
                   </div>
                 ))}
               </div>
@@ -244,10 +256,10 @@ const ProjectDetailPage = () => {
                 Fonctionnalités principales
               </h3>
               <div className="space-y-4">
-                {project.features.map((feature, index) => (
+                {project.features && project.features.map((feature, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <CheckCircle className="text-accent-green mt-1 flex-shrink-0" size={20} />
-                    <span className="text-text-secondary dark:text-text-light">{feature}</span>
+                    <span className="text-text-secondary dark:text-text-light">{feature.feature_text || feature}</span>
                   </div>
                 ))}
               </div>
@@ -256,46 +268,15 @@ const ProjectDetailPage = () => {
         </div>
       </section>
 
-      {/* Navigation vers autres projets */}
+      {/* Back to projects */}
       <section className="py-16 bg-white dark:bg-surface-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-2xl font-bold text-text-primary dark:text-text-dark mb-8 text-center">
-            Autres projets
-          </h3>
-          <div className="grid md:grid-cols-2 gap-8">
-            {prevProject && (
-              <Link to={`/projets/${prevProject.id}`} className="group">
-                <div className="bg-background dark:bg-background-dark rounded-xl p-6 border border-border dark:border-border hover:border-primary/30 transition-smooth">
-                  <div className="flex items-center gap-3 mb-4">
-                    <ArrowLeft className="text-primary" size={20} />
-                    <span className="text-sm text-text-secondary dark:text-text-light">Projet précédent</span>
-                  </div>
-                  <h4 className="text-xl font-semibold text-text-primary dark:text-text-dark group-hover:text-primary transition-smooth">
-                    {prevProject.title}
-                  </h4>
-                  <p className="text-text-secondary dark:text-text-light mt-2">
-                    {prevProject.description}
-                  </p>
-                </div>
-              </Link>
-            )}
-            {nextProject && (
-              <Link to={`/projets/${nextProject.id}`} className="group">
-                <div className="bg-background dark:bg-background-dark rounded-xl p-6 border border-border dark:border-border hover:border-primary/30 transition-smooth">
-                  <div className="flex items-center justify-end gap-3 mb-4">
-                    <span className="text-sm text-text-secondary dark:text-text-light">Projet suivant</span>
-                    <ArrowLeft className="text-primary rotate-180" size={20} />
-                  </div>
-                  <h4 className="text-xl font-semibold text-text-primary dark:text-text-dark group-hover:text-primary transition-smooth text-right">
-                    {nextProject.title}
-                  </h4>
-                  <p className="text-text-secondary dark:text-text-light mt-2 text-right">
-                    {nextProject.description}
-                  </p>
-                </div>
-              </Link>
-            )}
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Link to="/projets">
+            <Button variant="outline" size="lg">
+              <ArrowLeft className="mr-2" size={20} />
+              Retour aux projets
+            </Button>
+          </Link>
         </div>
       </section>
 

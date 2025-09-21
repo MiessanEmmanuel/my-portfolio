@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Button from '../components/Button';
-import { projects } from '../data/projects';
-import { ExternalLink, Github, Calendar, User, Clock, Filter } from 'lucide-react';
+import { useProjects } from '../hooks/useProjects';
+import { ExternalLink, Github, Calendar, User, Clock, Filter, Loader } from 'lucide-react';
 
 const ProjectsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('Tous');
   const [selectedStatus, setSelectedStatus] = useState('Tous');
+  
+  const { projects, loading, error } = useProjects();
 
   const categories = ['Tous', ...new Set(projects.map(p => p.category))];
   const statuses = ['Tous', ...new Set(projects.map(p => p.status))];
@@ -45,9 +47,9 @@ const ProjectsPage = () => {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-smooth">
           <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-            {project.liveUrl && (
+            {project.live_url && (
               <a
-                href={project.liveUrl}
+                href={project.live_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white text-text-primary px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition-smooth flex items-center gap-2"
@@ -56,9 +58,9 @@ const ProjectsPage = () => {
                 Demo
               </a>
             )}
-            {project.githubUrl && (
+            {project.github_url && (
               <a
-                href={project.githubUrl}
+                href={project.github_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white/20 backdrop-blur text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-white/30 transition-smooth flex items-center gap-2"
@@ -80,12 +82,12 @@ const ProjectsPage = () => {
         </p>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {project.technologies.slice(0, 3).map((tech, index) => (
+          {project.technologies && project.technologies.slice(0, 3).map((tech, index) => (
             <span key={index} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
-              {tech}
+              {tech.name || tech}
             </span>
           ))}
-          {project.technologies.length > 3 && (
+          {project.technologies && project.technologies.length > 3 && (
             <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-text-secondary dark:text-text-light text-xs rounded-full">
               +{project.technologies.length - 3}
             </span>
@@ -95,7 +97,7 @@ const ProjectsPage = () => {
         <div className="flex items-center justify-between mb-4 text-sm text-text-secondary dark:text-text-light">
           <div className="flex items-center gap-2">
             <Calendar size={14} />
-            <span>{project.date}</span>
+            <span>{project.date_completed || project.date}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock size={14} />
@@ -108,7 +110,7 @@ const ProjectsPage = () => {
             <User size={14} />
             <span>{project.client}</span>
           </div>
-          <Link to={`/projets/${project.id}`}>
+          <Link to={`/projets/${project.slug}`}>
             <Button variant="outline" size="sm">
               Voir détails
             </Button>
@@ -184,34 +186,56 @@ const ProjectsPage = () => {
       {/* Projects Grid */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-text-primary dark:text-text-dark">
-              {filteredProjects.length} projet{filteredProjects.length !== 1 ? 's' : ''} trouvé{filteredProjects.length !== 1 ? 's' : ''}
-            </h2>
-          </div>
+          {loading && (
+            <div className="flex justify-center items-center py-16">
+              <Loader className="animate-spin h-8 w-8 text-primary" />
+              <span className="ml-2 text-text-secondary">Chargement des projets...</span>
+            </div>
+          )}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-
-          {filteredProjects.length === 0 && (
+          {error && (
             <div className="text-center py-16">
-              <p className="text-text-secondary dark:text-text-light text-lg">
-                Aucun projet trouvé avec ces critères.
+              <p className="text-red-500 text-lg mb-4">
+                Erreur lors du chargement des projets: {error}
               </p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => {
-                  setSelectedCategory('Tous');
-                  setSelectedStatus('Tous');
-                }}
-              >
-                Réinitialiser les filtres
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Réessayer
               </Button>
             </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              <div className="mb-8 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-text-primary dark:text-text-dark">
+                  {filteredProjects.length} projet{filteredProjects.length !== 1 ? 's' : ''} trouvé{filteredProjects.length !== 1 ? 's' : ''}
+                </h2>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProjects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+
+              {filteredProjects.length === 0 && projects.length > 0 && (
+                <div className="text-center py-16">
+                  <p className="text-text-secondary dark:text-text-light text-lg">
+                    Aucun projet trouvé avec ces critères.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => {
+                      setSelectedCategory('Tous');
+                      setSelectedStatus('Tous');
+                    }}
+                  >
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

@@ -8,30 +8,86 @@ import ExerciseDetail from './pages/ExerciseDetail';
 import ContactPage from './pages/ContactPage';
 import { Home, Layers, Sparkles } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
-
-
+import { AuthProvider } from './contexts/AuthContext';
+import { AdminAuthProvider } from './contexts/AdminAuthContext';
+import LoginPage from './admin/LoginPage';
+import DashboardPage from './admin/DashboardPage';
+import ProjectsManagement from './admin/ProjectsManagement';
+import ProjectForm from './admin/ProjectForm';
+import FormationsManagement from './admin/FormationsManagement';
+import FormationForm from './admin/FormationForm';
+import ContactMessagesManagement from './admin/ContactMessagesManagement';
+import ProtectedRoute from './admin/ProtectedRoute';
 
 // Main App Component
 const App = () => {
   return (
     <ThemeProvider>
-      <Router>
-        <div className="App">
+      <AuthProvider>
+        <AdminAuthProvider>
+          <Router>
+          <div className="App">
 
-          {/* Routes */}
-          <Routes>
-            <Route path="/" element={<Home1 />} />
-            <Route path="/projets" element={<ProjectsPage />} />
-            <Route path="/projets/:id" element={<ProjectDetailPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
-            <Route path="/contact" element={<ContactPage />} />
+            {/* Routes */}
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Home1 />} />
+              <Route path="/projets" element={<ProjectsPage />} />
+              <Route path="/projets/:id" element={<ProjectDetailPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
+              <Route path="/contact" element={<ContactPage />} />
 
-            {/* Fallback route */}
-            <Route path="*" element={<Home1 />} />
-          </Routes>
-        </div>
-      </Router>
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<LoginPage />} />
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/projects" element={
+                <ProtectedRoute>
+                  <ProjectsManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/projects/new" element={
+                <ProtectedRoute>
+                  <ProjectForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/projects/:id/edit" element={
+                <ProtectedRoute>
+                  <ProjectForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formations" element={
+                <ProtectedRoute>
+                  <FormationsManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formations/new" element={
+                <ProtectedRoute>
+                  <FormationForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formations/:id/edit" element={
+                <ProtectedRoute>
+                  <FormationForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute>
+                  <ContactMessagesManagement />
+                </ProtectedRoute>
+              } />
+
+              {/* Fallback route */}
+              <Route path="*" element={<Home1 />} />
+            </Routes>
+          </div>
+          </Router>
+        </AdminAuthProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };

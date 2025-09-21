@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Button from '../components/Button';
+import { contactService } from '../services/contactService';
 import { 
   Mail, 
   Phone, 
@@ -16,7 +17,9 @@ import {
   Github,
   Linkedin,
   Twitter,
-  Globe
+  Globe,
+  Loader,
+  AlertCircle
 } from 'lucide-react';
 
 const ContactPage = () => {
@@ -32,6 +35,7 @@ const ContactPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const contactInfo = {
     email: 'contact@monportfolio.dev',
@@ -90,10 +94,10 @@ const ContactPage = () => {
     }
 
     setIsSubmitting(true);
+    setSubmitError('');
     
-    // Simulation d'envoi (remplacer par votre API)
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await contactService.sendMessage(formData);
       setIsSubmitted(true);
       setFormData({
         name: '',
@@ -106,6 +110,7 @@ const ContactPage = () => {
       });
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error);
+      setSubmitError(error.message || 'Une erreur est survenue lors de l\'envoi du message');
     } finally {
       setIsSubmitting(false);
     }
@@ -347,6 +352,13 @@ const ContactPage = () => {
                   {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
                 </div>
 
+                {submitError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
+                    <AlertCircle className="text-red-500" size={20} />
+                    <p className="text-red-700">{submitError}</p>
+                  </div>
+                )}
+
                 <Button 
                   type="submit"
                   variant="gradient" 
@@ -356,7 +368,7 @@ const ContactPage = () => {
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                      <Loader className="animate-spin h-5 w-5 mr-2" />
                       Envoi en cours...
                     </>
                   ) : (
