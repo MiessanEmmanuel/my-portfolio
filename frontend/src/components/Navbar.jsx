@@ -7,20 +7,19 @@ import { useTheme } from '../contexts/ThemeContext';
 const NavBar = ({ variant = 1 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
-  
+
   const navLinks = [
-    { name: 'Compétences', href: '#features' },
-    { name: 'À propos', href: '#about' },
+    { name: 'Accueil', href: '/' },
     { name: 'Projets', href: '/projets' },
-    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Contact', href: '/contact' },
   ];
-  
+
   const navVariants = {
     1: 'bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-border dark:border-border',
     2: 'bg-background-dark text-text-dark',
     3: 'bg-transparent absolute top-0 left-0 right-0 z-50',
   };
-  
+
   return (
     <nav className={`sticky top-0 z-50 transition-smooth ${navVariants[variant]}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,7 +31,7 @@ const NavBar = ({ variant = 1 }) => {
             </div>
             <span className="text-xl font-bold text-text-primary dark:text-text-dark">DevFolio</span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
@@ -55,7 +54,7 @@ const NavBar = ({ variant = 1 }) => {
               )
             ))}
           </div>
-          
+
           {/* Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <button
@@ -65,16 +64,16 @@ const NavBar = ({ variant = 1 }) => {
             >
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <Link to="/contact">
+            <Link to="#github">
               <Button variant="outline" size="sm">
-                Contact
+                Github
               </Button>
             </Link>
             <Button variant="primary" size="sm">
-              Projets
+              Télécharger mon CV
             </Button>
           </div>
-          
+
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -84,7 +83,7 @@ const NavBar = ({ variant = 1 }) => {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white dark:bg-background-dark border-b border-border dark:border-border animate-scale-in">

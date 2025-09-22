@@ -16,8 +16,15 @@ import ProjectsManagement from './admin/ProjectsManagement';
 import ProjectForm from './admin/ProjectForm';
 import FormationsManagement from './admin/FormationsManagement';
 import FormationForm from './admin/FormationForm';
+import PlatformFormationsManagement from './admin/PlatformFormationsManagement';
+import FormationCategoriesManagement from './admin/FormationCategoriesManagement';
+import LessonsManagement from './admin/LessonsManagement';
 import ContactMessagesManagement from './admin/ContactMessagesManagement';
 import ProtectedRoute from './admin/ProtectedRoute';
+import FormationsListPage from './formations/FormationsListPage';
+import FormationDetailPage from './formations/FormationDetailPage';
+import LessonPlayerPage from './formations/LessonPlayerPage';
+import UserProgressDashboard from './formations/UserProgressDashboard';
 
 // Main App Component
 const App = () => {
@@ -37,6 +44,12 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
               <Route path="/contact" element={<ContactPage />} />
+              
+              {/* Formations routes */}
+              <Route path="/formations" element={<FormationsListPage />} />
+              <Route path="/formations/:slug" element={<FormationDetailPage />} />
+              <Route path="/formations/:slug/lessons/:lessonId" element={<LessonPlayerPage />} />
+              <Route path="/mon-apprentissage" element={<UserProgressDashboard />} />
 
               {/* Admin routes */}
               <Route path="/admin/login" element={<LoginPage />} />
@@ -78,6 +91,23 @@ const App = () => {
               <Route path="/admin/messages" element={
                 <ProtectedRoute>
                   <ContactMessagesManagement />
+                </ProtectedRoute>
+              } />
+              
+              {/* Platform formations management */}
+              <Route path="/admin/platform-formations" element={
+                <ProtectedRoute>
+                  <PlatformFormationsManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formation-categories" element={
+                <ProtectedRoute>
+                  <FormationCategoriesManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/lessons" element={
+                <ProtectedRoute>
+                  <LessonsManagement />
                 </ProtectedRoute>
               } />
 

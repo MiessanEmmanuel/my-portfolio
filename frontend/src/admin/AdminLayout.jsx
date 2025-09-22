@@ -13,12 +13,15 @@ import {
   LogOut,
   Settings,
   ChevronDown,
-  Shield
+  Shield,
+  BookOpen,
+  Folder
 } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [platformSubmenuOpen, setPlatformSubmenuOpen] = useState(false);
   const { user, logout } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,8 +34,14 @@ const AdminLayout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: Home, current: location.pathname === '/admin/dashboard' },
     { name: 'Projets', href: '/admin/projects', icon: FolderOpen, current: location.pathname.startsWith('/admin/projects') },
-    { name: 'Formations', href: '/admin/formations', icon: GraduationCap, current: location.pathname.startsWith('/admin/formations') },
+    { name: 'Formations Perso', href: '/admin/formations', icon: GraduationCap, current: location.pathname.startsWith('/admin/formations') && !location.pathname.includes('platform') },
     { name: 'Messages', href: '/admin/messages', icon: MessageSquare, current: location.pathname.startsWith('/admin/messages') },
+  ];
+
+  const platformNavigation = [
+    { name: 'Formations', href: '/admin/platform-formations', icon: BookOpen, current: location.pathname.startsWith('/admin/platform-formations') },
+    { name: 'Catégories', href: '/admin/formation-categories', icon: Folder, current: location.pathname.startsWith('/admin/formation-categories') },
+    { name: 'Leçons', href: '/admin/lessons', icon: GraduationCap, current: location.pathname.startsWith('/admin/lessons') },
   ];
 
   const Sidebar = ({ mobile = false }) => (
@@ -72,6 +81,47 @@ const AdminLayout = ({ children }) => {
               </Link>
             );
           })}
+          
+          {/* Platform section */}
+          <div className="pt-4">
+            <div className="flex items-center justify-between px-3 py-2">
+              <h3 className="text-xs font-semibold text-text-secondary dark:text-text-light uppercase tracking-wider">
+                Plateforme
+              </h3>
+              <button
+                onClick={() => setPlatformSubmenuOpen(!platformSubmenuOpen)}
+                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ChevronDown 
+                  className={`w-4 h-4 text-text-light transition-transform ${platformSubmenuOpen ? 'rotate-180' : ''}`} 
+                />
+              </button>
+            </div>
+            {platformSubmenuOpen && (
+              <div className="space-y-1">
+                {platformNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-smooth ml-3 ${item.current
+                          ? 'bg-primary text-white'
+                          : 'text-text-secondary dark:text-text-light hover:bg-primary/10 hover:text-primary'
+                        }`}
+                      onClick={() => mobile && setSidebarOpen(false)}
+                    >
+                      <Icon
+                        className={`mr-3 flex-shrink-0 h-4 w-4 ${item.current ? 'text-white' : 'text-text-light group-hover:text-primary'
+                          }`}
+                      />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* User info */}

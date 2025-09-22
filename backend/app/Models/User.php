@@ -52,6 +52,26 @@ class User extends Authenticatable
         return $this->hasMany(UserExerciseProgress::class);
     }
 
+    public function lessonProgress(): HasMany
+    {
+        return $this->hasMany(LessonProgress::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(FormationReview::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    public function instructor(): HasOne
+    {
+        return $this->hasOne(Instructor::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
