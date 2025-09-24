@@ -13,7 +13,7 @@ class FormationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Formation::published()
-            ->with(['category', 'instructor.user', 'chapters.lessons' => function($query) {
+            ->with(['category', 'chapters.lessons' => function($query) {
                 $query->published()->orderBy('sort_order');
             }]);
 
@@ -76,7 +76,6 @@ class FormationController extends Controller
             ->published()
             ->with([
                 'category',
-                'instructor.user',
                 'chapters' => function($query) {
                     $query->published()->orderBy('sort_order');
                 },
@@ -100,7 +99,7 @@ class FormationController extends Controller
     {
         $formations = Formation::featured()
             ->published()
-            ->with(['category', 'instructor.user'])
+            ->with(['category'])
             ->limit(6)
             ->get();
 
@@ -163,7 +162,7 @@ class FormationController extends Controller
             'long_description' => 'nullable|string',
             'image' => 'nullable|url',
             'category_id' => 'required|exists:formation_categories,id',
-            'instructor_id' => 'required|exists:instructors,id',
+
             'level' => 'required|in:Débutant,Intermédiaire,Avancé,Expert',
             'price' => 'numeric|min:0',
             'is_free' => 'boolean',
@@ -187,7 +186,7 @@ class FormationController extends Controller
             'long_description' => 'nullable|string',
             'image' => 'nullable|url',
             'category_id' => 'required|exists:formation_categories,id',
-            'instructor_id' => 'required|exists:instructors,id',
+
             'level' => 'required|in:Débutant,Intermédiaire,Avancé,Expert',
             'price' => 'numeric|min:0',
             'is_free' => 'boolean',

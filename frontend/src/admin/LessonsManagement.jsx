@@ -164,7 +164,7 @@ const LessonsManagement = () => {
       .replace(/-+/g, '-')
       .trim('-');
   };
-
+console.log(lessons.filter)
   const filteredLessons = lessons.filter(lesson => {
     const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lesson.description?.toLowerCase().includes(searchTerm.toLowerCase());

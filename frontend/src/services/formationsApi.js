@@ -8,9 +8,9 @@ const api = axios.create({
 
 // Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use((config) => {
-  // Pour les routes admin, utiliser admin_token
+  // Pour les routes admin, utiliser token
   if (config.url.includes('/admin/')) {
-    const adminToken = localStorage.getItem('admin_token');
+    const adminToken = localStorage.getItem('token');
     if (adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`;
     }

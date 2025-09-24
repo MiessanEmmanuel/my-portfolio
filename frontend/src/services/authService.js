@@ -5,6 +5,10 @@ export const authService = {
     const response = await ApiService.post('/auth/login', { email, password });
     if (response.token) {
       ApiService.setToken(response.token);
+      // Stocker l'utilisateur pour l'accès hors ligne
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
     }
     return response;
   },
@@ -13,20 +17,32 @@ export const authService = {
     const response = await ApiService.post('/auth/register', userData);
     if (response.token) {
       ApiService.setToken(response.token);
+      // Stocker l'utilisateur pour l'accès hors ligne
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
     }
     return response;
   },
 
   async logout() {
     try {
-      await ApiService.post('/auth/logout');
+      const token = ApiService.getToken();
+      if (token) {
+        await ApiService.post('/auth/logout');
+      }
+    } catch (error) {
+      // Ignorer les erreurs de logout (token invalide, etc.)
+      console.log('Logout error (ignored):', error.message);
     } finally {
       ApiService.clearToken();
+      localStorage.removeItem('user');
     }
   },
 
   async getCurrentUser() {
-    return ApiService.get('/auth/me');
+    const response = await ApiService.get('/auth/me');
+    return response.user || response;
   },
 
   async updateProfile(profileData) {
@@ -43,5 +59,30 @@ export const authService = {
 
   getToken() {
     return ApiService.getToken();
+  },
+
+  // Méthodes pour la compatibilité admin
+  async checkAuth() {
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const user = await this.getCurrentUser();
+      localStorage.setItem('user', JSON.stringify(user));
+      return true;
+    } catch (error) {
+      this.clearToken();
+      return false;
+    }
+  },
+
+  clearToken() {
+    ApiService.clearToken();
+    localStorage.removeItem('user');
+  },
+
+  getCachedUser() {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
   }
 };

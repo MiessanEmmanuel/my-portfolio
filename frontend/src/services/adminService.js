@@ -2,7 +2,7 @@ import { API_BASE_URL } from './api';
 
 class AdminService {
   getHeaders() {
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('token');
     console.log(token)
     return {
       'Content-Type': 'application/json',

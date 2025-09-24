@@ -8,7 +8,7 @@ import ExerciseDetail from './pages/ExerciseDetail';
 import ContactPage from './pages/ContactPage';
 import { Home, Layers, Sparkles } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AdminAuthProvider } from './contexts/AdminAuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './admin/LoginPage';
 import DashboardPage from './admin/DashboardPage';
 import ProjectsManagement from './admin/ProjectsManagement';
@@ -29,92 +29,95 @@ import UserProgressDashboard from './formations/UserProgressDashboard';
 const App = () => {
   return (
     <ThemeProvider>
-      <AdminAuthProvider>
-        <Router>
-          <div className="App">
 
-            {/* Routes */}
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Home1 />} />
-              <Route path="/projets" element={<ProjectsPage />} />
-              <Route path="/projets/:id" element={<ProjectDetailPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
-              <Route path="/contact" element={<ContactPage />} />
-              
-              {/* Formations routes */}
-              <Route path="/formations" element={<FormationsListPage />} />
-              <Route path="/formations/:slug" element={<FormationDetailPage />} />
-              <Route path="/formations/:slug/lessons/:lessonId" element={<LessonPlayerPage />} />
-              <Route path="/mon-apprentissage" element={<UserProgressDashboard />} />
+      <AuthProvider>
 
-              {/* Admin routes */}
-              <Route path="/admin/login" element={<LoginPage />} />
-              <Route path="/admin/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/projects" element={
-                <ProtectedRoute>
-                  <ProjectsManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/projects/new" element={
-                <ProtectedRoute>
-                  <ProjectForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/projects/:id/edit" element={
-                <ProtectedRoute>
-                  <ProjectForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/formations" element={
-                <ProtectedRoute>
-                  <FormationsManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/formations/new" element={
-                <ProtectedRoute>
-                  <FormationForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/formations/:id/edit" element={
-                <ProtectedRoute>
-                  <FormationForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/messages" element={
-                <ProtectedRoute>
-                  <ContactMessagesManagement />
-                </ProtectedRoute>
-              } />
-              
-              {/* Platform formations management */}
-              <Route path="/admin/platform-formations" element={
-                <ProtectedRoute>
-                  <PlatformFormationsManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/formation-categories" element={
-                <ProtectedRoute>
-                  <FormationCategoriesManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/lessons" element={
-                <ProtectedRoute>
-                  <LessonsManagement />
-                </ProtectedRoute>
-              } />
+          <Router>
+            <div className="App">
 
-              {/* Fallback route */}
-              <Route path="*" element={<Home1 />} />
-            </Routes>
-          </div>
+              {/* Routes */}
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Home1 />} />
+                <Route path="/projets" element={<ProjectsPage />} />
+                <Route path="/projets/:id" element={<ProjectDetailPage />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
+                <Route path="/contact" element={<ContactPage />} />
+
+                {/* Formations routes */}
+                <Route path="/formations" element={<FormationsListPage />} />
+                <Route path="/formations/:slug" element={<FormationDetailPage />} />
+                <Route path="/formations/:slug/lessons/:lessonId" element={<LessonPlayerPage />} />
+                <Route path="/mon-apprentissage" element={<UserProgressDashboard />} />
+
+                {/* Admin routes */}
+                <Route path="/admin/login" element={<LoginPage />} />
+                <Route path="/admin/dashboard" element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/projects" element={
+                  <ProtectedRoute>
+                    <ProjectsManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/projects/new" element={
+                  <ProtectedRoute>
+                    <ProjectForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/projects/:id/edit" element={
+                  <ProtectedRoute>
+                    <ProjectForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/formations" element={
+                  <ProtectedRoute>
+                    <FormationsManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/formations/new" element={
+                  <ProtectedRoute>
+                    <FormationForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/formations/:id/edit" element={
+                  <ProtectedRoute>
+                    <FormationForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/messages" element={
+                  <ProtectedRoute>
+                    <ContactMessagesManagement />
+                  </ProtectedRoute>
+                } />
+
+                {/* Platform formations management */}
+                <Route path="/admin/platform-formations" element={
+                  <ProtectedRoute>
+                    <PlatformFormationsManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/formation-categories" element={
+                  <ProtectedRoute>
+                    <FormationCategoriesManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/lessons" element={
+                  <ProtectedRoute>
+                    <LessonsManagement />
+                  </ProtectedRoute>
+                } />
+
+                {/* Fallback route */}
+                <Route path="*" element={<Home1 />} />
+              </Routes>
+            </div>
           </Router>
-        </AdminAuthProvider>
+
+      </AuthProvider>
     </ThemeProvider>
   );
 };

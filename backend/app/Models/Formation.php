@@ -17,7 +17,6 @@ class Formation extends Model
         'image',
         'trailer_video_url',
         'category_id',
-        'instructor_id',
         'level',
         'duration_total_minutes',
         'price',
@@ -62,11 +61,6 @@ class Formation extends Model
     public function category()
     {
         return $this->belongsTo(FormationCategory::class, 'category_id');
-    }
-
-    public function instructor()
-    {
-        return $this->belongsTo(Instructor::class);
     }
 
     public function chapters()

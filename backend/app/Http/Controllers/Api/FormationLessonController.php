@@ -11,6 +11,61 @@ use Illuminate\Http\JsonResponse;
 
 class FormationLessonController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $query = FormationLesson::with(['chapter.formation', 'progress' => function($q) {
+            $q->where('user_id', auth()->id());
+        }]);
+
+        // Filtrer par formation
+        if ($request->has('formation_id')) {
+            $query->whereHas('chapter.formation', function($q) use ($request) {
+                $q->where('id', $request->formation_id);
+            });
+        }
+
+        // Filtrer par chapitre
+        if ($request->has('chapter_id')) {
+            $query->where('chapter_id', $request->chapter_id);
+        }
+
+        // Filtrer par type
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filtrer par statut publié
+        if ($request->boolean('published_only', true)) {
+            $query->published();
+        }
+
+        // Filtrer les leçons gratuites seulement
+        if ($request->boolean('free_only')) {
+            $query->where('is_free', true);
+        }
+
+        // Recherche par titre
+        if ($request->has('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Tri
+        $sortBy = $request->get('sort_by', 'sort_order');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        if (in_array($sortBy, ['title', 'created_at', 'sort_order', 'estimated_time_minutes'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('sort_order', 'asc');
+        }
+
+        // Pagination
+        $perPage = min($request->get('per_page', 15), 100);
+        $lessons = $query->paginate($perPage);
+
+        return response()->json($lessons);
+    }
+
     public function show(FormationLesson $lesson): JsonResponse
     {
         $lesson->load(['chapter.formation', 'progress' => function($query) {

@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import Button from '../components/Button';
-import { adminService } from '../services/adminService';
+import { authService } from '../services/authService';
 import {
   Save,
   ArrowLeft,
   Plus,
   Trash2,
-  Calendar,
-  Award,
-  Building,
   Loader,
   AlertCircle,
   CheckCircle,
@@ -25,23 +22,31 @@ const FormationForm = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    institution: '',
-    description: '',
-    type: 'Formation',
-    status: 'Terminé',
-    start_date: '',
-    end_date: '',
-    certificate_url: '',
-    image: '',
-    duration_hours: '',
-    level: 'Débutant',
-    instructor: '',
     slug: '',
-    skills: []
+    description: '',
+    long_description: '',
+    image: '',
+    trailer_video_url: '',
+    category_id: '',
+    level: 'Débutant',
+    duration_total_minutes: '',
+    price: '',
+    discount_price: '',
+    is_free: false,
+    is_premium: false,
+    status: 'draft',
+    difficulty_score: 1,
+    requirements: [],
+    objectives: [],
+    technologies: [],
+    has_certificate: false,
+    certificate_template_url: ''
   });
 
-  const [skills, setSkills] = useState([]);
-  const [newSkill, setNewSkill] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [newRequirement, setNewRequirement] = useState('');
+  const [newObjective, setNewObjective] = useState('');
+  const [newTechnology, setNewTechnology] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -49,22 +54,10 @@ const FormationForm = () => {
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const types = [
-    'Formation',
-    'Certification',
-    'Diplôme',
-    'Cours en ligne',
-    'Workshop',
-    'Conférence',
-    'Bootcamp',
-    'Autodidacte'
-  ];
-
   const statuses = [
-    'Terminé',
-    'En cours',
-    'Planifié',
-    'Abandonné'
+    { value: 'draft', label: 'Brouillon' },
+    { value: 'published', label: 'Publié' },
+    { value: 'archived', label: 'Archivé' }
   ];
 
   const levels = [
@@ -75,24 +68,68 @@ const FormationForm = () => {
   ];
 
   useEffect(() => {
+    fetchCategories();
     if (isEdit) {
       fetchFormation();
     }
   }, [id, isEdit]);
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${ import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/formation-categories`, {
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+        console.log(categories)
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+
   const fetchFormation = async () => {
     try {
       setLoading(true);
-      const formation = await adminService.getFormation(id);
-      
-      setFormData({
-        ...formation,
-        start_date: formation.start_date ? formation.start_date.split('T')[0] : '',
-        end_date: formation.end_date ? formation.end_date.split('T')[0] : '',
-        duration_hours: formation.duration_hours || ''
+      const response = await fetch(`${ import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/formations/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`,
+          'Accept': 'application/json'
+        }
       });
-      
-      setSkills(formation.skills || []);
+
+      if (response.ok) {
+        const formation = await response.json();
+        setFormData({
+          title: formation.title || '',
+          slug: formation.slug || '',
+          description: formation.description || '',
+          long_description: formation.long_description || '',
+          image: formation.image || '',
+          trailer_video_url: formation.trailer_video_url || '',
+          category_id: formation.category_id || '',
+          level: formation.level || 'Débutant',
+          duration_total_minutes: formation.duration_total_minutes || '',
+          price: formation.price || '',
+          discount_price: formation.discount_price || '',
+          is_free: formation.is_free || false,
+          is_premium: formation.is_premium || false,
+          status: formation.status || 'draft',
+          difficulty_score: formation.difficulty_score || 1,
+          requirements: formation.requirements || [],
+          objectives: formation.objectives || [],
+          technologies: formation.technologies || [],
+          has_certificate: formation.has_certificate || false,
+          certificate_template_url: formation.certificate_template_url || ''
+        });
+      } else {
+        setError('Erreur lors du chargement de la formation');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -106,21 +143,13 @@ const FormationForm = () => {
     if (!formData.title.trim()) {
       newErrors.title = 'Le titre est requis';
     }
-    if (!formData.institution.trim()) {
-      newErrors.institution = 'L\'institution est requise';
-    }
     if (!formData.description.trim()) {
       newErrors.description = 'La description est requise';
     }
-    if (!formData.type) {
-      newErrors.type = 'Le type est requis';
+    if (!formData.category_id) {
+      newErrors.category_id = 'La catégorie est requise';
     }
-    if (!formData.status) {
-      newErrors.status = 'Le statut est requis';
-    }
-    if (!formData.start_date) {
-      newErrors.start_date = 'La date de début est requise';
-    }
+
     if (!formData.level) {
       newErrors.level = 'Le niveau est requis';
     }
@@ -150,19 +179,38 @@ const FormationForm = () => {
     try {
       const formationData = {
         ...formData,
-        skills
+        duration_total_minutes: formData.duration_total_minutes ? parseInt(formData.duration_total_minutes) : null,
+        price: formData.price ? parseFloat(formData.price) : null,
+        discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+        difficulty_score: parseInt(formData.difficulty_score),
+        requirements: Array.isArray(formData.requirements) ? formData.requirements : [],
+        objectives: Array.isArray(formData.objectives) ? formData.objectives : [],
+        technologies: Array.isArray(formData.technologies) ? formData.technologies : []
       };
 
-      if (isEdit) {
-        await adminService.updateFormation(id, formationData);
-      } else {
-        await adminService.createFormation(formationData);
-      }
+      const url = isEdit 
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/formations/${id}`
+        : `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/formations`;
 
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/admin/formations');
-      }, 2000);
+      const response = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formationData)
+      });
+
+      if (response.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/admin/formations');
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Erreur lors de la sauvegarde');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -171,28 +219,67 @@ const FormationForm = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
-  // Skills management
-  const addSkill = () => {
-    if (newSkill.trim() && !skills.find(s => s.skill_name === newSkill.trim())) {
-      setSkills([...skills, { skill_name: newSkill.trim() }]);
-      setNewSkill('');
+  // Array management functions
+  const addRequirement = () => {
+    if (newRequirement.trim() && !formData.requirements.includes(newRequirement.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        requirements: [...prev.requirements, newRequirement.trim()]
+      }));
+      setNewRequirement('');
     }
   };
 
-  const removeSkill = (index) => {
-    setSkills(skills.filter((_, i) => i !== index));
+  const removeRequirement = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      requirements: prev.requirements.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addObjective = () => {
+    if (newObjective.trim() && !formData.objectives.includes(newObjective.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        objectives: [...prev.objectives, newObjective.trim()]
+      }));
+      setNewObjective('');
+    }
+  };
+
+  const removeObjective = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      objectives: prev.objectives.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addTechnology = () => {
+    if (newTechnology.trim() && !formData.technologies.includes(newTechnology.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        technologies: [...prev.technologies, newTechnology.trim()]
+      }));
+      setNewTechnology('');
+    }
+  };
+
+  const removeTechnology = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      technologies: prev.technologies.filter((_, i) => i !== index)
+    }));
   };
 
   if (loading) {
@@ -223,7 +310,7 @@ const FormationForm = () => {
                 {isEdit ? 'Modifier la formation' : 'Nouvelle formation'}
               </h1>
               <p className="text-text-secondary dark:text-text-light">
-                {isEdit ? 'Modifiez les informations de la formation' : 'Ajoutez une nouvelle formation à votre portfolio'}
+                {isEdit ? 'Modifiez les informations de la formation' : 'Ajoutez une nouvelle formation'}
               </p>
             </div>
           </div>
@@ -275,76 +362,19 @@ const FormationForm = () => {
               </div>
 
               <div>
-                <label htmlFor="institution" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Institution/Organisme *
+                <label htmlFor="slug" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Slug (URL)
                 </label>
                 <input
                   type="text"
-                  id="institution"
-                  name="institution"
-                  value={formData.institution}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark ${
-                    errors.institution ? 'border-red-500' : 'border-border dark:border-border'
-                  }`}
-                  placeholder="Nom de l'institution"
-                />
-                {errors.institution && <p className="text-red-500 text-sm mt-1">{errors.institution}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="instructor" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Instructeur/Formateur
-                </label>
-                <input
-                  type="text"
-                  id="instructor"
-                  name="instructor"
-                  value={formData.instructor}
+                  id="slug"
+                  name="slug"
+                  value={formData.slug}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="Nom de l'instructeur"
+                  placeholder="url-de-la-formation"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Type *
-                </label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark ${
-                    errors.type ? 'border-red-500' : 'border-border dark:border-border'
-                  }`}
-                >
-                  {types.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-                {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Statut *
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark ${
-                    errors.status ? 'border-red-500' : 'border-border dark:border-border'
-                  }`}
-                >
-                  {statuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-                {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
+                <p className="text-xs text-text-secondary mt-1">Sera généré automatiquement si vide</p>
               </div>
 
               <div>
@@ -368,66 +398,99 @@ const FormationForm = () => {
               </div>
 
               <div>
-                <label htmlFor="start_date" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Date de début *
+                <label htmlFor="category_id" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Catégorie *
                 </label>
-                <input
-                  type="date"
-                  id="start_date"
-                  name="start_date"
-                  value={formData.start_date}
+                <select
+                  id="category_id"
+                  name="category_id"
+                  value={formData.category_id}
                   onChange={handleChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark ${
-                    errors.start_date ? 'border-red-500' : 'border-border dark:border-border'
+                    errors.category_id ? 'border-red-500' : 'border-border dark:border-border'
                   }`}
-                />
-                {errors.start_date && <p className="text-red-500 text-sm mt-1">{errors.start_date}</p>}
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </select>
+                {errors.category_id && <p className="text-red-500 text-sm mt-1">{errors.category_id}</p>}
               </div>
 
+             
+
               <div>
-                <label htmlFor="end_date" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Date de fin
+                <label htmlFor="status" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Statut
                 </label>
-                <input
-                  type="date"
-                  id="end_date"
-                  name="end_date"
-                  value={formData.end_date}
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                />
+                >
+                  {statuses.map(status => (
+                    <option key={status.value} value={status.value}>{status.label}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
-                <label htmlFor="duration_hours" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Durée (heures)
+                <label htmlFor="duration_total_minutes" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Durée totale (minutes)
                 </label>
                 <input
                   type="number"
-                  id="duration_hours"
-                  name="duration_hours"
-                  value={formData.duration_hours}
+                  id="duration_total_minutes"
+                  name="duration_total_minutes"
+                  value={formData.duration_total_minutes}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="40"
+                  placeholder="120"
                   min="0"
                 />
               </div>
 
               <div>
-                <label htmlFor="slug" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Slug (URL)
+                <label htmlFor="price" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Prix (€)
                 </label>
                 <input
-                  type="text"
-                  id="slug"
-                  name="slug"
-                  value={formData.slug}
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="url-de-la-formation"
+                  placeholder="99.99"
+                  step="0.01"
+                  min="0"
                 />
-                <p className="text-xs text-text-secondary mt-1">Sera généré automatiquement si vide</p>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="is_free"
+                    checked={formData.is_free}
+                    onChange={handleChange}
+                    className="rounded border-border"
+                  />
+                  <span className="text-sm text-text-primary dark:text-text-dark">Formation gratuite</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="is_premium"
+                    checked={formData.is_premium}
+                    onChange={handleChange}
+                    className="rounded border-border"
+                  />
+                  <span className="text-sm text-text-primary dark:text-text-dark">Formation premium</span>
+                </label>
               </div>
 
               <div className="md:col-span-2">
@@ -437,92 +500,30 @@ const FormationForm = () => {
                 <textarea
                   id="description"
                   name="description"
-                  rows={4}
+                  rows={3}
                   value={formData.description}
                   onChange={handleChange}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark resize-none ${
                     errors.description ? 'border-red-500' : 'border-border dark:border-border'
                   }`}
-                  placeholder="Description de la formation, objectifs, contenu..."
+                  placeholder="Description courte de la formation"
                 />
                 {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
               </div>
-            </div>
-          </div>
 
-          {/* Média et Certification */}
-          <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-border dark:border-border">
-            <h2 className="text-xl font-semibold text-text-primary dark:text-text-dark mb-6">
-              Média et certification
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="image" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  Image/Logo (URL)
+              <div className="md:col-span-2">
+                <label htmlFor="long_description" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                  Description détaillée
                 </label>
-                <input
-                  type="url"
-                  id="image"
-                  name="image"
-                  value={formData.image}
+                <textarea
+                  id="long_description"
+                  name="long_description"
+                  rows={5}
+                  value={formData.long_description}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="https://example.com/logo.jpg"
+                  className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark resize-none"
+                  placeholder="Description détaillée de la formation, objectifs, contenu..."
                 />
-              </div>
-
-              <div>
-                <label htmlFor="certificate_url" className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
-                  URL du certificat
-                </label>
-                <input
-                  type="url"
-                  id="certificate_url"
-                  name="certificate_url"
-                  value={formData.certificate_url}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="https://certificat.com/verify/123"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Compétences acquises */}
-          <div className="bg-white dark:bg-surface-dark rounded-xl p-6 border border-border dark:border-border">
-            <h2 className="text-xl font-semibold text-text-primary dark:text-text-dark mb-6">
-              Compétences acquises
-            </h2>
-            
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                  className="flex-1 px-4 py-2 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-smooth bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
-                  placeholder="Nom de la compétence"
-                />
-                <Button type="button" variant="outline" onClick={addSkill}>
-                  <Plus size={16} />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill, index) => (
-                  <div key={index} className="flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-sm">
-                    <span>{skill.skill_name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSkill(index)}
-                      className="text-secondary hover:text-secondary-hover"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
