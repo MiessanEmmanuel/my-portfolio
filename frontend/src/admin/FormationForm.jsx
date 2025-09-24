@@ -300,7 +300,7 @@ const FormationForm = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/admin/formations')}
+              onClick={() => navigate('/admin/platform-formations/')}
               className="p-2 bg-gray-100 dark:bg-gray-700 text-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-smooth"
             >
               <ArrowLeft size={20} />

@@ -78,16 +78,7 @@ const App = () => {
                     <FormationsManagement />
                   </ProtectedRoute>
                 } />
-                <Route path="/admin/formations/new" element={
-                  <ProtectedRoute>
-                    <FormationForm />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/formations/:id/edit" element={
-                  <ProtectedRoute>
-                    <FormationForm />
-                  </ProtectedRoute>
-                } />
+               
                 <Route path="/admin/messages" element={
                   <ProtectedRoute>
                     <ContactMessagesManagement />
@@ -98,6 +89,16 @@ const App = () => {
                 <Route path="/admin/platform-formations" element={
                   <ProtectedRoute>
                     <PlatformFormationsManagement />
+                  </ProtectedRoute>
+                } />
+                 <Route path="/admin/platform-formations/create" element={
+                  <ProtectedRoute>
+                    <FormationForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/platform-formations/:id/edit" element={
+                  <ProtectedRoute>
+                    <FormationForm />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/formation-categories" element={

@@ -82,7 +82,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::apiResource('users', UserController::class);
     Route::apiResource('projects', ProjectController::class)->except(['']);
     Route::apiResource('technologies', TechnologyController::class)->except(['index']);
-    Route::apiResource('formations', FormationController::class)->except([]);
+    Route::apiResource('formations', FormationController::class)->except(['']);
     Route::apiResource('formation-categories', FormationCategoryController::class);
     Route::apiResource('formation-lessons', FormationLessonController::class);
     Route::apiResource('exercises', ExerciseController::class)->except(['show']);

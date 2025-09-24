@@ -41,7 +41,7 @@ const PlatformFormationsManagement = () => {
         formationsApi.admin.getFormations(),
         formationsApi.admin.getCategories()
       ]);
-      
+      console.log(formationsResponse.data)
       setFormations(formationsResponse.data);
       setCategories(categoriesResponse.data);
     } catch (error) {

@@ -13,9 +13,15 @@ class FormationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Formation::published()
-            ->with(['category', 'chapters.lessons' => function($query) {
+            ->with(['category', 'chapters.lessons' => function ($query) {
                 $query->published()->orderBy('sort_order');
             }]);
+        if ($request->path() == "api/admin/formations") {
+            $query = Formation::with(['category', 'chapters.lessons' => function ($query) {
+                    $query->orderBy('sort_order');
+                }]);
+        }
+
 
         // Filtres
         if ($request->has('category_id')) {
@@ -40,9 +46,9 @@ class FormationController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -76,13 +82,13 @@ class FormationController extends Controller
             ->published()
             ->with([
                 'category',
-                'chapters' => function($query) {
+                'chapters' => function ($query) {
                     $query->published()->orderBy('sort_order');
                 },
-                'chapters.lessons' => function($query) {
+                'chapters.lessons' => function ($query) {
                     $query->published()->orderBy('sort_order');
                 },
-                'reviews' => function($query) {
+                'reviews' => function ($query) {
                     $query->with('user')->orderBy('created_at', 'desc')->limit(5);
                 }
             ])
@@ -141,7 +147,7 @@ class FormationController extends Controller
 
         $enrollments = UserEnrollment::where('user_id', $user->id)
             ->with([
-                'formation' => function($query) {
+                'formation' => function ($query) {
                     $query->with(['category', 'instructor.user']);
                 },
                 'currentLesson'
