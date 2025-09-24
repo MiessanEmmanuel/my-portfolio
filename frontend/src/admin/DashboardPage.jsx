@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../services/api'
 import AdminLayout from './AdminLayout';
 import Button from '../components/Button';
-import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import {
   FolderOpen,
   GraduationCap,
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const DashboardPage = () => {
-  const { user } = useAdminAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     projects: 0,
     formations: 0,
@@ -38,7 +38,7 @@ const DashboardPage = () => {
       const token = localStorage.getItem('admin_token');
 
       // Fetch projects count
-      const projectsResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8000/api'}/admin/projects`, {
+      const projectsResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/projects`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -46,7 +46,7 @@ const DashboardPage = () => {
       });
 
       // Fetch formations count
-      const formationsResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8000/api'}/admin/formations`, {
+      const formationsResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/formations`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -54,7 +54,7 @@ const DashboardPage = () => {
       });
 
       // Fetch messages count
-      const messagesResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8000/api'}/admin/contact-messages`, {
+      const messagesResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/contact-messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'

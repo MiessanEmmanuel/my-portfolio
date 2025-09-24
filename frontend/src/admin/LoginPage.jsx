@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAdminAuth } from '../contexts/AdminAuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Button';
 import { Mail, Lock, Eye, EyeOff, Loader, AlertCircle, Shield } from 'lucide-react';
 
@@ -14,11 +14,11 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  const { login, isAuthenticated, loading } = useAdminAuth();
+  const { login, isAuthenticated, loading, isAdmin } = useAuth();
   const location = useLocation();
 
-  // Redirect if already authenticated
-  if (!loading && isAuthenticated) {
+  // Redirect if already authenticated and is admin
+  if (!loading && isAuthenticated && isAdmin()) {
     const from = location.state?.from?.pathname || '/admin/dashboard';
     return <Navigate to={from} replace />;
   }
