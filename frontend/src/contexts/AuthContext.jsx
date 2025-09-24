@@ -11,25 +11,67 @@ export function useAuth() {
   return context;
 }
 
+// Alias pour la compatibilité avec les composants admin existants
+export const useAdminAuth = useAuth;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Migration des anciens tokens admin vers le système unifié
   useEffect(() => {
+    const adminToken = localStorage.getItem('token');
+    const adminUser = localStorage.getItem('admin_user');
+    
+    if (adminToken && !localStorage.getItem('token')) {
+      // Migrer le token admin vers le token unifié
+      localStorage.setItem('token', adminToken);
+      localStorage.removeItem('token');
+      
+      if (adminUser) {
+        localStorage.setItem('user', adminUser);
+        localStorage.removeItem('admin_user');
+      }
+    }
+    
     checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {
     try {
       if (authService.isAuthenticated()) {
-        const userData = await authService.getCurrentUser();
-        setUser(userData.user);
-        setIsAuthenticated(true);
+        // Essayer d'abord les données en cache
+        const cachedUser = authService.getCachedUser();
+        if (cachedUser) {
+          setUser(cachedUser);
+          setIsAuthenticated(true);
+          setLoading(false);
+        }
+
+        // Puis vérifier avec le serveur
+        try {
+          const userData = await authService.getCurrentUser();
+          const user = userData.user || userData;
+          setUser(user);
+          setIsAuthenticated(true);
+          // Mettre à jour le cache
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (error) {
+          // Si l'API échoue mais qu'on a des données en cache, les garder
+          if (!cachedUser) {
+            throw error;
+          }
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      authService.logout();
+      authService.clearToken();
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
@@ -71,8 +113,10 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
+
   const isAdmin = () => {
     return user?.role === 'admin';
+
   };
 
   const value = {

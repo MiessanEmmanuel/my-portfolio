@@ -30,6 +30,7 @@ const App = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
+
         <Router>
           <div className="App">
 
@@ -42,7 +43,7 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/exercise/:id" element={<ExerciseDetail />} />
               <Route path="/contact" element={<ContactPage />} />
-              
+
               {/* Formations routes */}
               <Route path="/formations" element={<FormationsListPage />} />
               <Route path="/formations/:slug" element={<FormationDetailPage />} />
@@ -76,26 +77,27 @@ const App = () => {
                   <FormationsManagement />
                 </ProtectedRoute>
               } />
-              <Route path="/admin/formations/new" element={
-                <ProtectedRoute>
-                  <FormationForm />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/formations/:id/edit" element={
-                <ProtectedRoute>
-                  <FormationForm />
-                </ProtectedRoute>
-              } />
+
               <Route path="/admin/messages" element={
                 <ProtectedRoute>
                   <ContactMessagesManagement />
                 </ProtectedRoute>
               } />
-              
+
               {/* Platform formations management */}
               <Route path="/admin/platform-formations" element={
                 <ProtectedRoute>
                   <PlatformFormationsManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/platform-formations/create" element={
+                <ProtectedRoute>
+                  <FormationForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/platform-formations/:id/edit" element={
+                <ProtectedRoute>
+                  <FormationForm />
                 </ProtectedRoute>
               } />
               <Route path="/admin/formation-categories" element={
@@ -113,8 +115,10 @@ const App = () => {
               <Route path="*" element={<Home1 />} />
             </Routes>
           </div>
-          </Router>
-        </AuthProvider>
+        </Router>
+
+      </AuthProvider>
+
     </ThemeProvider>
   );
 };

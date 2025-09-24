@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-console.log(isAdmin())
+
   if (!isAuthenticated || !isAdmin()) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
