@@ -96,7 +96,7 @@ class PortfolioSeeder extends Seeder
             'status' => 'Terminé',
             'date_completed' => 2024,
             'client' => 'Startup Tech',
-            'duration' => '6 mois',
+           /*  'duration' => '6 mois', */
             'featured' => true,
         ]);
 
@@ -112,7 +112,7 @@ class PortfolioSeeder extends Seeder
             'status' => 'Terminé',
             'date_completed' => 2024,
             'client' => 'Entreprise PME',
-            'duration' => '4 mois',
+           /*  'duration' => '4 mois', */
             'featured' => true,
         ]);
 
@@ -146,7 +146,7 @@ class PortfolioSeeder extends Seeder
             'title' => 'HTML/CSS Fondamentaux',
             'slug' => 'html-css-fondamentaux',
             'description' => 'Apprenez les bases du développement web avec HTML et CSS',
-            'duration' => '6 semaines',
+          /*   'duration' => '6 semaines', */
             'level' => 'Débutant',
             'color' => 'from-orange-500 to-red-500',
             'icon' => '🌐',
@@ -158,7 +158,7 @@ class PortfolioSeeder extends Seeder
             'title' => 'JavaScript Moderne',
             'slug' => 'javascript-moderne',
             'description' => 'Maîtrisez JavaScript ES6+ et les concepts avancés',
-            'duration' => '8 semaines',
+            /* 'duration' => '8 semaines', */
             'level' => 'Intermédiaire',
             'color' => 'from-yellow-500 to-orange-500',
             'icon' => '⚡',

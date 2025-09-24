@@ -3,7 +3,6 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
-    this.token = localStorage.getItem('token');
   }
 
   async request(endpoint, options = {}) {
@@ -17,8 +16,9 @@ class ApiService {
       ...options,
     };
 
-    if (this.token) {
-      config.headers.Authorization = `Bearer ${this.token}`;
+    const token = this.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     try {
@@ -65,7 +65,6 @@ class ApiService {
   }
 
   setToken(token) {
-    this.token = token;
     if (token) {
       localStorage.setItem('token', token);
     } else {
@@ -74,11 +73,10 @@ class ApiService {
   }
 
   getToken() {
-    return this.token;
+    return localStorage.getItem('token');
   }
 
   clearToken() {
-    this.token = null;
     localStorage.removeItem('token');
   }
 }

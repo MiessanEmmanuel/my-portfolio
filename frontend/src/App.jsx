@@ -8,7 +8,6 @@ import ExerciseDetail from './pages/ExerciseDetail';
 import ContactPage from './pages/ContactPage';
 import { Home, Layers, Sparkles } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
 import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import LoginPage from './admin/LoginPage';
 import DashboardPage from './admin/DashboardPage';
@@ -30,9 +29,8 @@ import UserProgressDashboard from './formations/UserProgressDashboard';
 const App = () => {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <AdminAuthProvider>
-          <Router>
+      <AdminAuthProvider>
+        <Router>
           <div className="App">
 
             {/* Routes */}
@@ -117,7 +115,6 @@ const App = () => {
           </div>
           </Router>
         </AdminAuthProvider>
-      </AuthProvider>
     </ThemeProvider>
   );
 };
