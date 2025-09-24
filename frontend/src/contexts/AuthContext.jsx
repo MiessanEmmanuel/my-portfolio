@@ -37,6 +37,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
+      
       const response = await authService.login(email, password);
       setUser(response.user);
       setIsAuthenticated(true);
@@ -70,6 +71,10 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
+  const isAdmin = () => {
+    return user?.role === 'admin';
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -78,7 +83,8 @@ export function AuthProvider({ children }) {
     register,
     logout,
     updateUser,
-    checkAuthStatus
+    checkAuthStatus,
+    isAdmin
   };
 
   return (

@@ -18,14 +18,14 @@ class AdminAuthService {
     }
 
     // Store token and user data
-    localStorage.setItem('admin_token', data.token);
+    localStorage.setItem('token', data.token);
     localStorage.setItem('admin_user', JSON.stringify(data.user));
 
     return data;
   }
 
   async logout() {
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('token');
 
     if (token) {
       try {
@@ -41,7 +41,7 @@ class AdminAuthService {
       }
     }
 
-    localStorage.removeItem('admin_token');
+    localStorage.removeItem('token');
     localStorage.removeItem('admin_user');
   }
 
@@ -51,7 +51,7 @@ class AdminAuthService {
   }
 
   getToken() {
-    return localStorage.getItem('admin_token');
+    return localStorage.getItem('token');
   }
 
   isAuthenticated() {

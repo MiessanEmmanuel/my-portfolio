@@ -18,7 +18,7 @@ const LoginPage = () => {
   const location = useLocation();
 
   // Redirect if already authenticated and is admin
-  if (!loading && isAuthenticated && isAdmin()) {
+  if (!loading && isAuthenticated  && isAdmin()) {
     const from = location.state?.from?.pathname || '/admin/dashboard';
     return <Navigate to={from} replace />;
   }
@@ -44,6 +44,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+   
     
     if (!validateForm()) {
       return;

@@ -35,7 +35,7 @@ const DashboardPage = () => {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('token');
 
       // Fetch projects count
       const projectsResponse = await fetch(`${API_BASE_URL || 'http://127.0.0.1:8002/api'}/admin/projects`, {

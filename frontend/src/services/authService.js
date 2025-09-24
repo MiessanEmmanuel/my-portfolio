@@ -3,6 +3,7 @@ import ApiService from './api.js';
 export const authService = {
   async login(email, password) {
     const response = await ApiService.post('/auth/login', { email, password });
+    console.log(response.token)
     if (response.token) {
       ApiService.setToken(response.token);
     }
