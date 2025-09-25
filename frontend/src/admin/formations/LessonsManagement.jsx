@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import AdminLayout from './AdminLayout';
-import Button from '../components/Button';
-import { formationsApi } from '../services/formationsApi';
+
+import Button from '../../components/Button';
+import { formationsApi } from '../../services/formationsApi';
 import {
   Plus,
   Search,
@@ -20,6 +20,7 @@ import {
   Code,
   ExternalLink
 } from 'lucide-react';
+import AdminLayout from '../AdminLayout';
 
 const LessonsManagement = () => {
   const [lessons, setLessons] = useState([]);
@@ -37,12 +38,13 @@ const LessonsManagement = () => {
     title: '',
     slug: '',
     description: '',
-    long_description: '',
+    content: '',
     chapter_id: '',
     video_url: '',
     exercise_url: '',
     estimated_time_minutes: 0,
     sort_order: 0,
+    type: 'video',
     is_free: false,
     is_published: true
   });
@@ -50,7 +52,7 @@ const LessonsManagement = () => {
   useEffect(() => {
     loadData();
   }, []);
-
+  console.log(formations)
   useEffect(() => {
     if (selectedFormation !== 'all') {
       loadChapters(selectedFormation);
@@ -67,8 +69,9 @@ const LessonsManagement = () => {
         formationsApi.admin.getLessons(),
         formationsApi.admin.getFormations()
       ]);
-      setLessons(lessonsResponse.data);
-      setFormations(formationsResponse.data);
+
+      setLessons(Array.isArray(lessonsResponse.data.data) ? lessonsResponse.data.data : []);
+      setFormations(Array.isArray(formationsResponse.data) ? formationsResponse.data : []);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -91,8 +94,11 @@ const LessonsManagement = () => {
     try {
       if (editingLesson) {
         const response = await formationsApi.admin.updateLesson(editingLesson.id, formData);
-        setLessons(lessons.map(lesson => 
-          lesson.id === editingLesson.id ? response.data : lesson
+          
+        setLessons(lessons.map(lesson => {
+           console.log(lesson.id, editingLesson.id)
+         return lesson.id === editingLesson.id ? response.data : lesson
+        }
         ));
       } else {
         const response = await formationsApi.admin.createLesson(formData);
@@ -119,12 +125,13 @@ const LessonsManagement = () => {
       title: '',
       slug: '',
       description: '',
-      long_description: '',
+      content: '',
       chapter_id: '',
       video_url: '',
       exercise_url: '',
       estimated_time_minutes: 0,
       sort_order: 0,
+      type: 'video',
       is_free: false,
       is_published: true
     });
@@ -137,12 +144,13 @@ const LessonsManagement = () => {
       title: lesson.title,
       slug: lesson.slug,
       description: lesson.description || '',
-      long_description: lesson.long_description || '',
+      content: lesson.content || '',
       chapter_id: lesson.chapter_id,
       video_url: lesson.video_url || '',
       exercise_url: lesson.exercise_url || '',
       estimated_time_minutes: lesson.estimated_time_minutes || 0,
       sort_order: lesson.sort_order || 0,
+      type: lesson.type || 'video',
       is_free: lesson.is_free || false,
       is_published: lesson.is_published !== false
     });
@@ -164,18 +172,16 @@ const LessonsManagement = () => {
       .replace(/-+/g, '-')
       .trim('-');
   };
-console.log(lessons.filter)
+
   const filteredLessons = lessons.filter(lesson => {
-    const matchesSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    console.log(lessons)
+    const matchesSearch = lesson.title?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
       lesson.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFormation = selectedFormation === 'all' || 
+    const matchesFormation = selectedFormation === 'all' ||
       lesson.chapter?.formation_id === parseInt(selectedFormation);
-    const matchesChapter = selectedChapter === 'all' || 
+    const matchesChapter = selectedChapter === 'all' ||
       lesson.chapter_id === parseInt(selectedChapter);
-    const matchesType = selectedType === 'all' ||
-      (selectedType === 'video' && lesson.video_url) ||
-      (selectedType === 'exercise' && lesson.exercise_url) ||
-      (selectedType === 'text' && !lesson.video_url && !lesson.exercise_url);
+    const matchesType = selectedType === 'all' || lesson.type === selectedType;
 
     return matchesSearch && matchesFormation && matchesChapter && matchesType;
   });
@@ -185,10 +191,12 @@ console.log(lessons.filter)
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            {lesson.video_url ? (
+            {lesson.type === 'video' ? (
               <Video className="text-primary" size={24} />
-            ) : lesson.exercise_url ? (
+            ) : lesson.type === 'exercise' ? (
               <Code className="text-secondary" size={24} />
+            ) : lesson.type === 'quiz' ? (
+              <AlertCircle className="text-accent-green" size={24} />
             ) : (
               <FileText className="text-text-light" size={24} />
             )}
@@ -200,6 +208,18 @@ console.log(lessons.filter)
             <p className="text-sm text-text-secondary dark:text-text-light">
               {lesson.chapter?.title} • {lesson.chapter?.formation?.title}
             </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${lesson.type === 'video' ? 'bg-blue-100 text-blue-800' :
+                  lesson.type === 'exercise' ? 'bg-green-100 text-green-800' :
+                    lesson.type === 'quiz' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                }`}>
+                {lesson.type === 'video' ? 'Vidéo' :
+                  lesson.type === 'exercise' ? 'Exercice' :
+                    lesson.type === 'quiz' ? 'Quiz' :
+                      'Texte'}
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -306,7 +326,7 @@ console.log(lessons.filter)
                 />
               </div>
             </div>
-            
+
             <select
               value={selectedFormation}
               onChange={(e) => setSelectedFormation(e.target.value)}
@@ -342,6 +362,7 @@ console.log(lessons.filter)
               <option value="all">Tous les types</option>
               <option value="video">Vidéo</option>
               <option value="exercise">Exercice</option>
+              <option value="quiz">Quiz</option>
               <option value="text">Texte</option>
             </select>
           </div>
@@ -483,6 +504,23 @@ console.log(lessons.filter)
 
                 <div>
                   <label className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
+                    Type de leçon *
+                  </label>
+                  <select
+                    required
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
+                  >
+                    <option value="video">Vidéo</option>
+                    <option value="exercise">Exercice</option>
+                    <option value="quiz">Quiz</option>
+                    <option value="text">Texte</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary dark:text-text-dark mb-2">
                     Description courte
                   </label>
                   <textarea
@@ -499,8 +537,8 @@ console.log(lessons.filter)
                     Contenu détaillé (HTML)
                   </label>
                   <textarea
-                    value={formData.long_description}
-                    onChange={(e) => setFormData({ ...formData, long_description: e.target.value })}
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     className="w-full px-3 py-2 border border-border dark:border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-background-dark text-text-primary dark:text-text-dark"
                     rows="6"
                     placeholder="Contenu détaillé de la leçon (HTML autorisé)..."
@@ -616,11 +654,11 @@ console.log(lessons.filter)
                   </p>
                 </div>
               </div>
-              
+
               <p className="text-text-secondary dark:text-text-light mb-6">
                 Êtes-vous sûr de vouloir supprimer la leçon "<strong>{deleteModal.lesson?.title}</strong>" ?
               </p>
-              
+
               <div className="flex gap-3">
                 <Button
                   variant="outline"

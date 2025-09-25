@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Formation;
 use App\Models\UserEnrollment;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -18,8 +19,8 @@ class FormationController extends Controller
             }]);
         if ($request->path() == "api/admin/formations") {
             $query = Formation::with(['category', 'chapters.lessons' => function ($query) {
-                    $query->orderBy('sort_order');
-                }]);
+                $query->orderBy('sort_order');
+            }]);
         }
 
 
@@ -76,23 +77,31 @@ class FormationController extends Controller
         return response()->json($formations);
     }
 
-    public function show($slug): JsonResponse
+    public function show(Request $request, $formationId): JsonResponse
     {
-        $formation = Formation::where('slug', $slug)
-            ->published()
+        $formation = Formation::where('slug', $formationId)->published()
             ->with([
                 'category',
-                'chapters' => function ($query) {
-                    $query->published()->orderBy('sort_order');
-                },
-                'chapters.lessons' => function ($query) {
-                    $query->published()->orderBy('sort_order');
-                },
-                'reviews' => function ($query) {
-                    $query->with('user')->orderBy('created_at', 'desc')->limit(5);
-                }
+                'chapters' => fn($q) => $q->published()->orderBy('sort_order'),
+                'chapters.lessons' => fn($q) => $q->published()->orderBy('sort_order'),
+                'reviews' => fn($q) => $q->with('user')->latest()->limit(5),
             ])
-            ->firstOrFail();
+            ->first();
+
+        if ($request->is("api/admin/formations/*")) {
+            $formation = Formation::with([
+                'category',
+                'chapters' => fn($q) => $q->published()->orderBy('sort_order'),
+                'chapters.lessons' => fn($q) => $q->published()->orderBy('sort_order'),
+                'reviews' => fn($q) => $q->with('user')->latest()->limit(5),
+            ])
+                ->findOrFail($formationId);
+        }
+
+        if (!$formation){
+            return response()->json("Formation non trouvé", 404);
+        }
+
 
         // Ajouter les statistiques
         $formation->total_lessons = $formation->lessons()->published()->count();

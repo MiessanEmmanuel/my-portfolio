@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\TechnologyController;
 use App\Http\Controllers\Api\FormationController;
 use App\Http\Controllers\Api\FormationCategoryController;
+use App\Http\Controllers\Api\FormationChapterController;
 use App\Http\Controllers\Api\FormationLessonController;
 use App\Http\Controllers\Api\FormationReviewController;
 use App\Http\Controllers\Api\UserProgressController;
@@ -84,7 +85,13 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::apiResource('technologies', TechnologyController::class)->except(['index']);
     Route::apiResource('formations', FormationController::class)->except(['']);
     Route::apiResource('formation-categories', FormationCategoryController::class);
+    Route::apiResource('formation-chapters', FormationChapterController::class);
     Route::apiResource('formation-lessons', FormationLessonController::class);
+    
+    // Routes supplémentaires pour les chapitres
+    Route::post('formation-chapters/reorder', [FormationChapterController::class, 'reorder']);
+    Route::post('formation-chapters/{formationChapter}/publish', [FormationChapterController::class, 'publish']);
+    Route::post('formation-chapters/{formationChapter}/unpublish', [FormationChapterController::class, 'unpublish']);
     Route::apiResource('exercises', ExerciseController::class)->except(['show']);
     Route::apiResource('contact-messages', ContactMessageController::class)->except(['store']);
 

@@ -66,13 +66,14 @@ class FormationLessonController extends Controller
         return response()->json($lessons);
     }
 
-    public function show(FormationLesson $lesson): JsonResponse
+    public function show(FormationLesson $formationLesson): JsonResponse
     {
-        $lesson->load(['chapter.formation', 'progress' => function($query) {
+
+        $formationLesson->load(['chapter.formation', 'progress' => function($query) {
             $query->where('user_id', auth()->id());
         }]);
 
-        return response()->json($lesson);
+        return response()->json($formationLesson);
     }
 
     public function getByChapter(FormationChapter $chapter): JsonResponse
@@ -212,7 +213,7 @@ class FormationLessonController extends Controller
         return response()->json($lesson, 201);
     }
 
-    public function update(Request $request, FormationLesson $lesson): JsonResponse
+    public function update(Request $request, FormationLesson $formationLesson): JsonResponse
     {
         $request->validate([
             'chapter_id' => 'required|exists:formation_chapters,id',
@@ -228,14 +229,14 @@ class FormationLessonController extends Controller
             'type' => 'required|in:video,exercise,quiz,text'
         ]);
 
-        $lesson->update($request->all());
+        $formationLesson->update($request->all());
 
-        return response()->json($lesson);
+        return response()->json($formationLesson);
     }
 
-    public function destroy(FormationLesson $lesson): JsonResponse
+    public function destroy(FormationLesson $formationLesson): JsonResponse
     {
-        $lesson->delete();
+        $formationLesson->delete();
 
         return response()->json(['message' => 'Leçon supprimée avec succès']);
     }

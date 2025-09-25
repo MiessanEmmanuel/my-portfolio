@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import AdminLayout from './AdminLayout';
-import Button from '../components/Button';
-import { formationsApi } from '../services/formationsApi';
+
+import Button from '../../components/Button';
+import { formationsApi } from '../../services/formationsApi';
 import {
   Plus,
   Search,
@@ -13,6 +13,7 @@ import {
   X,
   Save
 } from 'lucide-react';
+import AdminLayout from '../AdminLayout';
 
 const FormationCategoriesManagement = () => {
   const [categories, setCategories] = useState([]);

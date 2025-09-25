@@ -54,7 +54,7 @@ const FormationsListPage = () => {
           }),
           formationsApi.getCategories()
         ]);
-        
+        console.log(formationsResponse.data)
         setFormations(formationsResponse.data);
         setCategories(categoriesResponse.data);
       } catch (err) {

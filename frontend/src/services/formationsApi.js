@@ -86,7 +86,14 @@ export const formationsApi = {
     deleteLesson: (id) => api.delete(`/admin/formation-lessons/${id}`),
 
     // Chapters management
-    getFormationChapters: (formationId) => api.get(`/admin/formations/${formationId}/chapters`),
+    getChapters: (params = {}) => api.get('/admin/formation-chapters', { params }),
+    getChapter: (id) => api.get(`/admin/formation-chapters/${id}`),
+    createChapter: (chapterData) => api.post('/admin/formation-chapters', chapterData),
+    updateChapter: (id, chapterData) => api.put(`/admin/formation-chapters/${id}`, chapterData),
+    deleteChapter: (id) => api.delete(`/admin/formation-chapters/${id}`),
+    reorderChapters: (chaptersData) => api.post('/admin/formation-chapters/reorder', chaptersData),
+    publishChapter: (id) => api.post(`/admin/formation-chapters/${id}/publish`),
+    unpublishChapter: (id) => api.post(`/admin/formation-chapters/${id}/unpublish`),
   }
 };
 

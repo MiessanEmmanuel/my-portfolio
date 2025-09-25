@@ -11,19 +11,22 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './admin/LoginPage';
 import DashboardPage from './admin/DashboardPage';
-import ProjectsManagement from './admin/ProjectsManagement';
-import ProjectForm from './admin/ProjectForm';
-import FormationsManagement from './admin/FormationsManagement';
+import ProjectsManagement from './admin/projets/ProjectsManagement';
+import ProjectForm from './admin/projets/ProjectForm';
+
 import FormationForm from './admin/FormationForm';
-import PlatformFormationsManagement from './admin/PlatformFormationsManagement';
-import FormationCategoriesManagement from './admin/FormationCategoriesManagement';
-import LessonsManagement from './admin/LessonsManagement';
+import PlatformFormationsManagement from './admin/formations/PlatformFormationsManagement';
+import FormationCategoriesManagement from './admin/formations/FormationCategoriesManagement';
+import ChaptersManagement from './admin/formations/ChaptersManagement';
+import ChapterForm from './admin/formations/ChapterForm';
+import LessonsManagement from './admin/formations/LessonsManagement';
 import ContactMessagesManagement from './admin/ContactMessagesManagement';
 import ProtectedRoute from './admin/ProtectedRoute';
 import FormationsListPage from './formations/FormationsListPage';
 import FormationDetailPage from './formations/FormationDetailPage';
 import LessonPlayerPage from './formations/LessonPlayerPage';
 import UserProgressDashboard from './formations/UserProgressDashboard';
+import FormationsManagement from './admin/FormationsManagement';
 
 // Main App Component
 const App = () => {
@@ -103,6 +106,21 @@ const App = () => {
               <Route path="/admin/formation-categories" element={
                 <ProtectedRoute>
                   <FormationCategoriesManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formation-chapters" element={
+                <ProtectedRoute>
+                  <ChaptersManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formation-chapters/new" element={
+                <ProtectedRoute>
+                  <ChapterForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/formation-chapters/:id/edit" element={
+                <ProtectedRoute>
+                  <ChapterForm />
                 </ProtectedRoute>
               } />
               <Route path="/admin/lessons" element={

@@ -10,7 +10,6 @@ class FormationLesson extends Model
     use HasFactory;
 
     protected $fillable = [
-        'formation_id',
         'chapter_id',
         'title',
         'slug',

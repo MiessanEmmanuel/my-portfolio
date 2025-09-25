@@ -9,6 +9,8 @@ class Formation extends Model
 {
     use HasFactory;
 
+
+
     protected $fillable = [
         'title',
         'slug',
@@ -91,7 +93,7 @@ class Formation extends Model
     // Scopes
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')->whereNotNull('published_at');
+        return $query->where('status', 'published');
     }
 
     public function scopeFeatured($query)

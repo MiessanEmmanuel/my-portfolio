@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AdminLayout from './AdminLayout';
-import Button from '../components/Button';
-import { formationsApi } from '../services/formationsApi';
+import AdminLayout from '../AdminLayout';
+import Button from '../../components/Button';
+import { formationsApi } from '../../services/formationsApi';
 import {
   Plus,
   Search,
